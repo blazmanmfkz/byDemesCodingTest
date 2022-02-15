@@ -4,15 +4,18 @@ from .serializers import HeroSerializer, CitySerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 # Create your views here.
 
-class CityList(APIView):
-    def get(self, request):
-        cities = City.objects.all()
-        serializer = CitySerializer(cities, many=True)
-        return Response(serializer.data)
+class CityList(generics.ListAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    ordering_fields = ['id', 'name', 'population']
+
 
     def post(self, request):
         serializer = CitySerializer(data=request.data)
@@ -46,11 +49,12 @@ class CitySingle(APIView):
         city.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class HeroList(APIView):
-    def get(self, request):
-        heroes = Hero.objects.all()
-        serializer = HeroSerializer(heroes, many=True)
-        return Response(serializer.data)
+class HeroList(generics.ListAPIView):
+    queryset = Hero.objects.all()
+    serializer_class = HeroSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['gender', 'city_id']
+    ordering_fields = ['id', 'name', 'alias']
 
     def post(self, request):
         serializer = HeroSerializer(data=request.data)
